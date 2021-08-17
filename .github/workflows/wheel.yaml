@@ -9,8 +9,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
+        arch: [aarch64]
     env:
+      CIBW_ARCHS_LINUX: ${{matrix.arch}}
       CIBW_TEST_COMMAND: pytest --pyargs numcodecs
       CIBW_TEST_REQUIRES: pytest
       CIBW_SKIP: "*27* pp* *35*"
@@ -26,6 +28,15 @@ jobs:
         name: Install Python
         with:
           python-version: '3.9'
+
+      - name: Install submodules
+        run: |
+          git submodule init
+          git submodule update
+
+      - uses: docker/setup-qemu-action@v1
+        if: ${{ matrix.arch == 'aarch64' }}
+        name: Set up QEMU
 
       - name: Install cibuildwheel
         run: |
